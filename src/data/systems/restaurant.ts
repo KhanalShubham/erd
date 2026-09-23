@@ -1,0 +1,148 @@
+import type { SystemScenario } from '../../types/system';
+
+export const restaurantSystem: SystemScenario = {
+  id: 'restaurant',
+  name: 'Restaurant Table & Order Management',
+  category: 'Hospitality',
+  difficulty: 'Beginner',
+  shortDescription: 'Kitchen orders, dining tables, waiters, food menu items, and customer bills.',
+  scenarioStory:
+    'A bustling bistro tracks waiter table allocations and kitchen order tickets. Guests sit at dining tables, waitstaff take food and drink orders from the menu, and tickets calculate total meal checks.',
+  learningObjectives: [
+    'Model waiter table service assignments',
+    'Track order items with quantity and preparation notes',
+    'Define ENUM domains for menu categories and seating areas',
+  ],
+  conceptsCovered: ['1:N Cardinality', 'Associative Entities', 'CHECK Constraints', 'Foreign Keys', 'ENUM Domain'],
+  entityCount: 4,
+  requirements: [
+    {
+      id: 'res_1',
+      text: 'Dining tables have TableNumber, seating Capacity, and LocationArea (Indoor, Patio, Bar).',
+      nounHints: ['DiningTable', 'TableNumber', 'capacity'],
+      verbHints: [],
+      attributeHints: ['TableNumber (PK)', 'Capacity (CHECK > 0)', 'LocationArea (Domain: Indoor, Patio, Bar)'],
+    },
+    {
+      id: 'res_2',
+      text: 'Waiters have WaiterID, full name, and phone contact.',
+      nounHints: ['Waiter', 'WaiterID'],
+      verbHints: [],
+      attributeHints: ['WaiterID (PK)', 'FullName', 'Phone'],
+    },
+    {
+      id: 'res_3',
+      text: 'Menu items have ItemID, dish name, Category (Appetizer, Main, Dessert, Drink), and price.',
+      nounHints: ['MenuItem', 'ItemID', 'category', 'price'],
+      verbHints: [],
+      attributeHints: ['ItemID (PK)', 'ItemName', 'Category', 'Price (CHECK > 0)'],
+    },
+    {
+      id: 'res_4',
+      text: 'Order tickets record TicketID, TableNumber FK, WaiterID FK, OrderTime, and TotalCheck.',
+      nounHints: ['OrderTicket', 'TableNumber', 'WaiterID'],
+      verbHints: ['serves', 'places order'],
+      attributeHints: ['TicketID (PK)', 'TableNumber (FK)', 'WaiterID (FK)', 'OrderTime', 'TotalCheck'],
+      cardinalityHint: 'DiningTable 1 ──── N OrderTicket N ──── 1 Waiter',
+    },
+  ],
+  canonicalEntities: [
+    {
+      id: 'ent_rst_tbl',
+      name: 'DINING_TABLE',
+      type: 'strong',
+      description: 'Physical dining seating spot in restaurant floor plan',
+      position: { x: 70, y: 70 },
+      attributes: [
+        { id: 'tb_1', entityId: 'ent_rst_tbl', name: 'TableNumber', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'tb_2', entityId: 'ent_rst_tbl', name: 'Capacity', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false, domain: { minValue: 1, maxValue: 12 } },
+        { id: 'tb_3', entityId: 'ent_rst_tbl', name: 'LocationArea', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false, domain: { allowedValues: ['Indoor', 'Patio', 'Bar'] } },
+      ],
+    },
+    {
+      id: 'ent_rst_wtr',
+      name: 'WAITER',
+      type: 'strong',
+      description: 'Front of house hospitality server',
+      position: { x: 440, y: 70 },
+      attributes: [
+        { id: 'wt_1', entityId: 'ent_rst_wtr', name: 'WaiterID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'wt_2', entityId: 'ent_rst_wtr', name: 'FullName', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+        { id: 'wt_3', entityId: 'ent_rst_wtr', name: 'Phone', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: true, isUnique: false },
+      ],
+    },
+    {
+      id: 'ent_rst_tkt',
+      name: 'ORDER_TICKET',
+      type: 'strong',
+      description: 'Meal ticket sent to kitchen for cooking',
+      position: { x: 260, y: 390 },
+      attributes: [
+        { id: 'tk_1', entityId: 'ent_rst_tkt', name: 'TicketID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'tk_2', entityId: 'ent_rst_tkt', name: 'TableNumber', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_rst_tbl' },
+        { id: 'tk_3', entityId: 'ent_rst_tkt', name: 'WaiterID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_rst_wtr' },
+        { id: 'tk_4', entityId: 'ent_rst_tkt', name: 'OrderTime', type: 'simple', dataType: 'DATETIME', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+        { id: 'tk_5', entityId: 'ent_rst_tkt', name: 'TotalCheck', type: 'simple', dataType: 'DECIMAL', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+      ],
+    },
+    {
+      id: 'ent_rst_menu',
+      name: 'MENU_ITEM',
+      type: 'strong',
+      description: 'Culinary dish prepared by chefs',
+      position: { x: 780, y: 390 },
+      attributes: [
+        { id: 'mi_1', entityId: 'ent_rst_menu', name: 'ItemID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'mi_2', entityId: 'ent_rst_menu', name: 'ItemName', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'mi_3', entityId: 'ent_rst_menu', name: 'Category', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false, domain: { allowedValues: ['Appetizer', 'Main', 'Dessert', 'Drink'] } },
+        { id: 'mi_4', entityId: 'ent_rst_menu', name: 'Price', type: 'simple', dataType: 'DECIMAL', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false, domain: { minValue: 0.50 } },
+      ],
+    },
+  ],
+  canonicalRelationships: [
+    {
+      id: 'rel_rst_tbl_tkt',
+      name: 'seats',
+      sourceEntityId: 'ent_rst_tbl',
+      targetEntityId: 'ent_rst_tkt',
+      cardinality: '1:N',
+      sourceOptionality: '1',
+      targetOptionality: '0',
+      sourceMax: '1',
+      targetMax: 'N',
+      attributes: [],
+    },
+    {
+      id: 'rel_rst_wtr_tkt',
+      name: 'serves',
+      sourceEntityId: 'ent_rst_wtr',
+      targetEntityId: 'ent_rst_tkt',
+      cardinality: '1:N',
+      sourceOptionality: '1',
+      targetOptionality: '0',
+      sourceMax: '1',
+      targetMax: 'N',
+      attributes: [],
+    },
+  ],
+  sampleData: {
+    DINING_TABLE: [
+      { TableNumber: 1, Capacity: 4, LocationArea: 'Indoor' },
+      { TableNumber: 2, Capacity: 2, LocationArea: 'Patio' },
+      { TableNumber: 3, Capacity: 6, LocationArea: 'Indoor' },
+    ],
+    WAITER: [
+      { WaiterID: 21, FullName: 'Marco Pierre', Phone: '555-8821' },
+      { WaiterID: 22, FullName: 'Sophie Germain', Phone: '555-8822' },
+    ],
+    MENU_ITEM: [
+      { ItemID: 301, ItemName: 'Truffle Mushroom Risotto', Category: 'Main', Price: 24.50 },
+      { ItemID: 302, ItemName: 'Crispy Calamari', Category: 'Appetizer', Price: 14.00 },
+      { ItemID: 303, ItemName: 'Tiramisu Tradizionale', Category: 'Dessert', Price: 9.50 },
+    ],
+    ORDER_TICKET: [
+      { TicketID: 801, TableNumber: 1, WaiterID: 21, OrderTime: '2026-03-22 19:15:00', TotalCheck: 38.50 },
+      { TicketID: 802, TableNumber: 2, WaiterID: 22, OrderTime: '2026-03-22 19:45:00', TotalCheck: 24.50 },
+    ],
+  },
+};

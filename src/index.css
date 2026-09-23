@@ -1,0 +1,134 @@
+@import "tailwindcss";
+@import '@xyflow/react/dist/style.css';
+
+@layer base {
+  :root {
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --font-handwriting: 'Patrick Hand', 'Caveat', cursive;
+    --paper-bg: #FAF9F5;
+    --paper-card: #FFFFFF;
+    --ink-primary: #18181B;
+    --ink-secondary: #52525B;
+    --highlighter-yellow: #F6E77A;
+    --border-ruler: #27272A;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background-color: var(--paper-bg);
+    color: var(--ink-primary);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.font-handwriting {
+  font-family: var(--font-handwriting);
+}
+
+/* Notebook Paper Grid Pattern */
+.paper-grid {
+  background-color: #FAF9F5;
+  background-image: radial-gradient(#D4D4D8 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Custom Scrollbar for notebook panels */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F4F4F5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D4D4D8;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A1A1AA;
+}
+
+/* React Flow customizations for Pen & Paper ERD */
+.react-flow__attribution {
+  display: none !important;
+}
+
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid #18181B;
+  background-color: #FFFFFF;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.react-flow__handle:hover {
+  transform: scale(1.4);
+  background-color: #F6E77A;
+  border-color: #000000;
+}
+
+/* Row Slide/Fade In for newly added attributes */
+@keyframes rowSlideFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+    background-color: #F6E77A;
+  }
+  60% {
+    background-color: #FEF08A;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    background-color: transparent;
+  }
+}
+
+.animate-row-in {
+  animation: rowSlideFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Temporary yellow highlight flash for PK or FK transformation */
+@keyframes yellowHighlightPulse {
+  0% {
+    background-color: rgba(246, 231, 122, 0.9);
+  }
+  50% {
+    background-color: rgba(246, 231, 122, 0.6);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.animate-yellow-pulse {
+  animation: yellowHighlightPulse 0.6s ease-out forwards;
+}
+
+/* Subtle yellow pulse for FK referencing */
+@keyframes fk-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.5);
+    border-color: #18181B;
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(246, 231, 122, 0.7);
+    border-color: #CA8A04;
+  }
+}
+
+.fk-highlight-pulse {
+  animation: fk-pulse 1.6s ease-in-out infinite;
+}
+

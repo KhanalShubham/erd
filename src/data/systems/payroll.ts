@@ -1,0 +1,125 @@
+import type { SystemScenario } from '../../types/system';
+
+export const payrollSystem: SystemScenario = {
+  id: 'payroll',
+  name: 'Payroll & Salary Disbursement',
+  category: 'Business',
+  difficulty: 'Intermediate',
+  shortDescription: 'Corporate staff compensation, department cost centers, monthly pay slips, and tax deductions.',
+  scenarioStory:
+    'A corporate human resources department processes monthly salary disbursements. Employees belong to cost centers, and every month finance generates itemized pay slips computing gross pay minus tax deductions.',
+  learningObjectives: [
+    'Model organizational cost center hierarchies',
+    'Enforce financial constraints (NetPay = GrossPay - Deductions)',
+    'Define DECIMAL salary and deduction domains',
+  ],
+  conceptsCovered: ['Strong Entity', '1:N Cardinality', 'DECIMAL Constraints', 'Foreign Keys', 'CHECK constraint'],
+  entityCount: 3,
+  requirements: [
+    {
+      id: 'pay_1',
+      text: 'Departments have DeptID and department name.',
+      nounHints: ['Department', 'DeptID'],
+      verbHints: [],
+      attributeHints: ['DeptID (PK)', 'DeptName (UNIQUE)'],
+    },
+    {
+      id: 'pay_2',
+      text: 'Employees have EmployeeID, full name, job title, base salary (CHECK > 0), and DeptID FK.',
+      nounHints: ['Employee', 'salary', 'title'],
+      verbHints: ['assigned to'],
+      attributeHints: ['EmployeeID (PK)', 'FullName', 'JobTitle', 'BaseSalary (CHECK > 0)', 'DeptID (FK)'],
+      cardinalityHint: 'Department 1 ──── N Employee',
+    },
+    {
+      id: 'pay_3',
+      text: 'Salary slips record SlipID, EmployeeID FK, pay month period, gross earnings, taxes withheld, and net pay.',
+      nounHints: ['SalarySlip', 'gross pay', 'net pay'],
+      verbHints: ['receives'],
+      attributeHints: ['SlipID (PK)', 'EmployeeID (FK)', 'PayPeriod', 'GrossPay', 'Deductions', 'NetPay'],
+      cardinalityHint: 'Employee 1 ──── N SalarySlip',
+    },
+  ],
+  canonicalEntities: [
+    {
+      id: 'ent_pay_dept',
+      name: 'PAYROLL_DEPARTMENT',
+      type: 'strong',
+      description: 'Corporate organizational cost center',
+      position: { x: 80, y: 80 },
+      attributes: [
+        { id: 'pd_1', entityId: 'ent_pay_dept', name: 'DeptID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'pd_2', entityId: 'ent_pay_dept', name: 'DeptName', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: true },
+      ],
+    },
+    {
+      id: 'ent_pay_emp',
+      name: 'EMPLOYEE',
+      type: 'strong',
+      description: 'Corporate staff member receiving monthly compensation',
+      position: { x: 460, y: 80 },
+      attributes: [
+        { id: 'pe_1', entityId: 'ent_pay_emp', name: 'EmployeeID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'pe_2', entityId: 'ent_pay_emp', name: 'FullName', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+        { id: 'pe_3', entityId: 'ent_pay_emp', name: 'JobTitle', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+        { id: 'pe_4', entityId: 'ent_pay_emp', name: 'BaseSalary', type: 'simple', dataType: 'DECIMAL', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false, domain: { minValue: 1000 } },
+        { id: 'pe_5', entityId: 'ent_pay_emp', name: 'DeptID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_pay_dept' },
+      ],
+    },
+    {
+      id: 'ent_pay_slip',
+      name: 'SALARY_SLIP',
+      type: 'strong',
+      description: 'Itemized monthly earnings stub',
+      position: { x: 460, y: 390 },
+      attributes: [
+        { id: 'ps_1', entityId: 'ent_pay_slip', name: 'SlipID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'ps_2', entityId: 'ent_pay_slip', name: 'EmployeeID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_pay_emp' },
+        { id: 'ps_3', entityId: 'ent_pay_slip', name: 'PayPeriod', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+        { id: 'ps_4', entityId: 'ent_pay_slip', name: 'GrossPay', type: 'simple', dataType: 'DECIMAL', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+        { id: 'ps_5', entityId: 'ent_pay_slip', name: 'Deductions', type: 'simple', dataType: 'DECIMAL', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+        { id: 'ps_6', entityId: 'ent_pay_slip', name: 'NetPay', type: 'simple', dataType: 'DECIMAL', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+      ],
+    },
+  ],
+  canonicalRelationships: [
+    {
+      id: 'rel_pay_d_e',
+      name: 'employs',
+      sourceEntityId: 'ent_pay_dept',
+      targetEntityId: 'ent_pay_emp',
+      cardinality: '1:N',
+      sourceOptionality: '1',
+      targetOptionality: '0',
+      sourceMax: '1',
+      targetMax: 'N',
+      attributes: [],
+    },
+    {
+      id: 'rel_pay_e_s',
+      name: 'issued_to',
+      sourceEntityId: 'ent_pay_emp',
+      targetEntityId: 'ent_pay_slip',
+      cardinality: '1:N',
+      sourceOptionality: '1',
+      targetOptionality: '0',
+      sourceMax: '1',
+      targetMax: 'N',
+      attributes: [],
+    },
+  ],
+  sampleData: {
+    PAYROLL_DEPARTMENT: [
+      { DeptID: 101, DeptName: 'Engineering & Product' },
+      { DeptID: 102, DeptName: 'People Operations & HR' },
+    ],
+    EMPLOYEE: [
+      { EmployeeID: 4001, FullName: 'Linus Torvalds', JobTitle: 'Principal Architect', BaseSalary: 9500.00, DeptID: 101 },
+      { EmployeeID: 4002, FullName: 'Margaret Hamilton', JobTitle: 'Software Director', BaseSalary: 9800.00, DeptID: 101 },
+    ],
+    SALARY_SLIP: [
+      { SlipID: 90001, EmployeeID: 4001, PayPeriod: 'March 2026', GrossPay: 9500.00, Deductions: 1900.00, NetPay: 7600.00 },
+      { SlipID: 90002, EmployeeID: 4002, PayPeriod: 'March 2026', GrossPay: 9800.00, Deductions: 2100.00, NetPay: 7700.00 },
+    ],
+  },
+};

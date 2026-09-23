@@ -1,0 +1,147 @@
+import type { SystemScenario } from '../../types/system';
+
+export const socialMediaSystem: SystemScenario = {
+  id: 'socialmedia',
+  name: 'Social Media & Messaging Network',
+  category: 'Social',
+  difficulty: 'Advanced',
+  shortDescription: 'User follower graphs, recursive subscriptions, published micro-posts, and threaded feedback comments.',
+  scenarioStory:
+    'A real-time social network powers content sharing. Users author micro-posts, comment on discussions, and follow other users in a self-referencing symmetric follower network.',
+  learningObjectives: [
+    'Model recursive self-referencing relationship (User follows User)',
+    'Handle weak comments referencing parent posts',
+    'Demonstrate role-naming in follower/followee relationships',
+  ],
+  conceptsCovered: ['Recursive Relationship', 'Self-referencing Foreign Key', '1:N Cardinality', 'M:N Resolution', 'DATETIME Domain'],
+  entityCount: 4,
+  requirements: [
+    {
+      id: 'soc_1',
+      text: 'Users have UserID, unique @handle, full name, and bio text.',
+      nounHints: ['UserProfile', 'handle', 'bio'],
+      verbHints: [],
+      attributeHints: ['UserID (PK)', 'Handle (UNIQUE)', 'FullName', 'Bio'],
+    },
+    {
+      id: 'soc_2',
+      text: 'Users author Posts with PostID, UserID FK, content text, and CreatedAt timestamp.',
+      nounHints: ['UserPost', 'content', 'timestamp'],
+      verbHints: ['authors'],
+      attributeHints: ['PostID (PK)', 'UserID (FK)', 'Content', 'CreatedAt'],
+      cardinalityHint: 'User 1 ──── N Post',
+    },
+    {
+      id: 'soc_3',
+      text: 'Comments are attached to posts, recording CommentID, PostID FK, AuthorUserID FK, and CommentText.',
+      nounHints: ['PostComment', 'CommentText'],
+      verbHints: ['comments on'],
+      attributeHints: ['CommentID (PK)', 'PostID (FK)', 'AuthorID (FK)', 'CommentText', 'CreatedAt'],
+      cardinalityHint: 'Post 1 ──── N Comment',
+    },
+    {
+      id: 'soc_4',
+      text: 'Users follow other users in a self-referencing follower graph (FollowerID, FolloweeID, FollowDate).',
+      nounHints: ['UserFollow', 'follower', 'followee'],
+      verbHints: ['follows'],
+      attributeHints: ['FollowerID (PK, FK)', 'FolloweeID (PK, FK)', 'FollowDate'],
+      cardinalityHint: 'User M ──── N User (Self-referencing Recursive)',
+    },
+  ],
+  canonicalEntities: [
+    {
+      id: 'ent_soc_usr',
+      name: 'USER_PROFILE',
+      type: 'strong',
+      description: 'Registered social network identity account',
+      position: { x: 70, y: 70 },
+      attributes: [
+        { id: 'su_1', entityId: 'ent_soc_usr', name: 'UserID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'su_2', entityId: 'ent_soc_usr', name: 'Handle', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'su_3', entityId: 'ent_soc_usr', name: 'FullName', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+        { id: 'su_4', entityId: 'ent_soc_usr', name: 'Bio', type: 'simple', dataType: 'TEXT', isPrimaryKey: false, isForeignKey: false, isNullable: true, isUnique: false },
+      ],
+    },
+    {
+      id: 'ent_soc_pst',
+      name: 'USER_POST',
+      type: 'strong',
+      description: 'Broadcast post feed publication',
+      position: { x: 440, y: 70 },
+      attributes: [
+        { id: 'sp_1', entityId: 'ent_soc_pst', name: 'PostID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'sp_2', entityId: 'ent_soc_pst', name: 'UserID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_soc_usr' },
+        { id: 'sp_3', entityId: 'ent_soc_pst', name: 'Content', type: 'simple', dataType: 'TEXT', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+        { id: 'sp_4', entityId: 'ent_soc_pst', name: 'CreatedAt', type: 'simple', dataType: 'DATETIME', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+      ],
+    },
+    {
+      id: 'ent_soc_cmt',
+      name: 'POST_COMMENT',
+      type: 'strong',
+      description: 'Threaded commentary on published post',
+      position: { x: 440, y: 390 },
+      attributes: [
+        { id: 'sc_1', entityId: 'ent_soc_cmt', name: 'CommentID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'sc_2', entityId: 'ent_soc_cmt', name: 'PostID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_soc_pst' },
+        { id: 'sc_3', entityId: 'ent_soc_cmt', name: 'AuthorID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_soc_usr' },
+        { id: 'sc_4', entityId: 'ent_soc_cmt', name: 'CommentText', type: 'simple', dataType: 'TEXT', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+      ],
+    },
+    {
+      id: 'ent_soc_fol',
+      name: 'USER_FOLLOW',
+      type: 'associative',
+      description: 'Recursive junction table modeling User follows User graph',
+      position: { x: 70, y: 390 },
+      attributes: [
+        { id: 'sf_1', entityId: 'ent_soc_fol', name: 'FollowerID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_soc_usr' },
+        { id: 'sf_2', entityId: 'ent_soc_fol', name: 'FolloweeID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_soc_usr' },
+        { id: 'sf_3', entityId: 'ent_soc_fol', name: 'FollowDate', type: 'simple', dataType: 'DATE', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+      ],
+    },
+  ],
+  canonicalRelationships: [
+    {
+      id: 'rel_soc_u_p',
+      name: 'publishes',
+      sourceEntityId: 'ent_soc_usr',
+      targetEntityId: 'ent_soc_pst',
+      cardinality: '1:N',
+      sourceOptionality: '1',
+      targetOptionality: '0',
+      sourceMax: '1',
+      targetMax: 'N',
+      attributes: [],
+    },
+    {
+      id: 'rel_soc_p_c',
+      name: 'has_comment',
+      sourceEntityId: 'ent_soc_pst',
+      targetEntityId: 'ent_soc_cmt',
+      cardinality: '1:N',
+      sourceOptionality: '1',
+      targetOptionality: '0',
+      sourceMax: '1',
+      targetMax: 'N',
+      attributes: [],
+    },
+  ],
+  sampleData: {
+    USER_PROFILE: [
+      { UserID: 1, Handle: '@satya', FullName: 'Satya Nadella', Bio: 'Empowering every person and organization.' },
+      { UserID: 2, Handle: '@demis', FullName: 'Demis Hassabis', Bio: 'Working on AGI at Google DeepMind.' },
+    ],
+    USER_POST: [
+      { PostID: 101, UserID: 1, Content: 'Excited about the future of developer tools and agentic coding!', CreatedAt: '2026-03-01 10:00:00' },
+      { PostID: 102, UserID: 2, Content: 'AlphaFold breakthroughs expanding into protein design.', CreatedAt: '2026-03-02 14:30:00' },
+    ],
+    POST_COMMENT: [
+      { CommentID: 501, PostID: 101, AuthorID: 2, CommentText: 'Great work! The frontier is moving fast.' },
+    ],
+    USER_FOLLOW: [
+      { FollowerID: 1, FolloweeID: 2, FollowDate: '2026-01-15' },
+      { FollowerID: 2, FolloweeID: 1, FollowDate: '2026-01-16' },
+    ],
+  },
+};
