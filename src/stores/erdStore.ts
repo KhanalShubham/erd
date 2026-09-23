@@ -193,7 +193,26 @@ export const useErdStore = create<ErdStoreState>((set, get) => ({
         if (e.id !== entityId) return e;
         return {
           ...e,
-          attributes: e.attributes.map((a) => (a.id === attrId ? { ...a, ...updates } : a)),
+          attributes: e.attributes.map((a) => {
+            if (a.id === attrId) {
+              const merged = { ...a, ...updates };
+              if (updates.isPrimaryKey === true) {
+                merged.isPrimaryKey = true;
+                merged.isForeignKey = false;
+                merged.isNullable = false;
+                merged.isUnique = true;
+              }
+              if (updates.isForeignKey === true) {
+                merged.isForeignKey = true;
+                merged.isPrimaryKey = false;
+              }
+              return merged;
+            }
+            if (updates.isPrimaryKey === true && a.isPrimaryKey) {
+              return { ...a, isPrimaryKey: false };
+            }
+            return a;
+          }),
         };
       }),
     }));
@@ -218,16 +237,25 @@ export const useErdStore = create<ErdStoreState>((set, get) => ({
     set((state) => ({
       entities: state.entities.map((e) => {
         if (e.id !== entityId) return e;
+        const targetAttr = e.attributes.find((a) => a.id === attrId);
+        const willBePk = targetAttr ? !targetAttr.isPrimaryKey : false;
+
         return {
           ...e,
           attributes: e.attributes.map((a) => {
             if (a.id === attrId) {
-              const willBePk = !a.isPrimaryKey;
               return {
                 ...a,
                 isPrimaryKey: willBePk,
+                isForeignKey: willBePk ? false : a.isForeignKey,
                 isNullable: willBePk ? false : a.isNullable,
                 isUnique: willBePk ? true : a.isUnique,
+              };
+            }
+            if (willBePk && a.isPrimaryKey) {
+              return {
+                ...a,
+                isPrimaryKey: false,
               };
             }
             return a;
@@ -301,12 +329,23 @@ export const useErdStore = create<ErdStoreState>((set, get) => ({
       position: { x: midX, y: midY },
       attributes: [
         {
+          id: `attr_${Date.now()}_pk`,
+          entityId: assocId,
+          name: `${name.replace(/\s+/g, '')}ID`,
+          type: 'simple',
+          dataType: 'INTEGER',
+          isPrimaryKey: true,
+          isForeignKey: false,
+          isNullable: false,
+          isUnique: true,
+        },
+        {
           id: `attr_${Date.now()}_fk1`,
           entityId: assocId,
           name: sourcePk ? sourcePk.name : `${source.name}ID`,
           type: 'simple',
           dataType: sourcePk ? sourcePk.dataType : 'INTEGER',
-          isPrimaryKey: true,
+          isPrimaryKey: false,
           isForeignKey: true,
           isNullable: false,
           isUnique: false,
@@ -318,7 +357,7 @@ export const useErdStore = create<ErdStoreState>((set, get) => ({
           name: targetPk ? targetPk.name : `${target.name}ID`,
           type: 'simple',
           dataType: targetPk ? targetPk.dataType : 'INTEGER',
-          isPrimaryKey: true,
+          isPrimaryKey: false,
           isForeignKey: true,
           isNullable: false,
           isUnique: false,

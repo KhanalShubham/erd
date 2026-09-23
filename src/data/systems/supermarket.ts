@@ -9,11 +9,11 @@ export const supermarketSystem: SystemScenario = {
   scenarioStory:
     'A grocery supermarket registers hundreds of cart checkouts an hour across multiple POS lanes. Cashiers scan barcoded items, emit timestamped sale receipts, and update store inventory stock levels.',
   learningObjectives: [
-    'Model point-of-sale receipt line items with composite primary keys',
+    'Model point-of-sale receipt line items with single Primary Key (LineItemID) and Foreign Keys (ReceiptID, Barcode)',
     'Define ENUM domains for shifts (Morning, Evening, Night) and payment methods',
     'Track stock decrement logic and subtotal calculations',
   ],
-  conceptsCovered: ['Composite Primary Key', 'Associative Entity', '1:N', 'ENUM Domain', 'CHECK constraint'],
+  conceptsCovered: ['Primary Key', 'Associative Entity', '1:N', 'ENUM Domain', 'CHECK constraint', 'Foreign Keys'],
   entityCount: 4,
   requirements: [
     {
@@ -43,7 +43,7 @@ export const supermarketSystem: SystemScenario = {
       text: 'Each receipt contains multiple scanned items with item quantity and computed subtotal.',
       nounHints: ['ReceiptLine', 'quantity', 'subtotal'],
       verbHints: ['includes'],
-      attributeHints: ['ReceiptID (PK, FK)', 'Barcode (PK, FK)', 'Quantity (CHECK > 0)', 'Subtotal'],
+      attributeHints: ['LineItemID (PK)', 'ReceiptID (FK)', 'Barcode (FK)', 'Quantity (CHECK > 0)', 'Subtotal'],
       cardinalityHint: 'SaleReceipt 1 ──── N ReceiptLine N ──── 1 BarcodeProduct',
     },
   ],
@@ -90,11 +90,12 @@ export const supermarketSystem: SystemScenario = {
       id: 'ent_sup_line',
       name: 'RECEIPT_LINE',
       type: 'associative',
-      description: 'Individual barcode scan line on receipt',
+      description: 'Individual barcode scan line on receipt with LineItemID Primary Key',
       position: { x: 440, y: 390 },
       attributes: [
-        { id: 'sl_1', entityId: 'ent_sup_line', name: 'ReceiptID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_sup_rcp' },
-        { id: 'sl_2', entityId: 'ent_sup_line', name: 'Barcode', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: true, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_sup_prd' },
+        { id: 'sl_0', entityId: 'ent_sup_line', name: 'LineItemID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+        { id: 'sl_1', entityId: 'ent_sup_line', name: 'ReceiptID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_sup_rcp' },
+        { id: 'sl_2', entityId: 'ent_sup_line', name: 'Barcode', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_sup_prd' },
         { id: 'sl_3', entityId: 'ent_sup_line', name: 'Quantity', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false, domain: { minValue: 1 } },
         { id: 'sl_4', entityId: 'ent_sup_line', name: 'Subtotal', type: 'simple', dataType: 'DECIMAL', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
       ],
@@ -153,9 +154,9 @@ export const supermarketSystem: SystemScenario = {
       { ReceiptID: 6002, CashierID: 12, ReceiptTime: '2026-03-20 17:15:00', PaymentMethod: 'Cash' },
     ],
     RECEIPT_LINE: [
-      { ReceiptID: 6001, Barcode: '890103001', Quantity: 2, Subtotal: 6.98 },
-      { ReceiptID: 6001, Barcode: '890103002', Quantity: 1, Subtotal: 2.29 },
-      { ReceiptID: 6002, Barcode: '890103003', Quantity: 1, Subtotal: 7.99 },
+      { LineItemID: 1, ReceiptID: 6001, Barcode: '890103001', Quantity: 2, Subtotal: 6.98 },
+      { LineItemID: 2, ReceiptID: 6001, Barcode: '890103002', Quantity: 1, Subtotal: 2.29 },
+      { LineItemID: 3, ReceiptID: 6002, Barcode: '890103003', Quantity: 1, Subtotal: 7.99 },
     ],
   },
 };

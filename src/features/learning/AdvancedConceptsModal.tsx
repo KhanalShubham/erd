@@ -44,7 +44,7 @@ export const AdvancedConceptsModal: React.FC<AdvancedConceptsModalProps> = ({ is
       summary:
         'A Weak Entity cannot be uniquely identified by its own attributes alone. It depends upon an identifying owner entity. Its primary key is formed by combining the owner primary key with its own partial discriminator key.',
       databaseRule:
-        'Relational Result: ORDER_ITEM table takes OrderID (FK, PK) + ItemNumber (PK) as a composite primary key. When an Order is deleted, cascading deletes purge all its line items.',
+        'Relational Result: ORDER_ITEM table uses OrderItemID as its Primary Key and OrderID (FK) referencing PURCHASE_ORDER. When an Order is deleted, cascading deletes purge all its line items.',
       entities: [
         {
           id: 'adv_ord',
@@ -65,8 +65,9 @@ export const AdvancedConceptsModal: React.FC<AdvancedConceptsModalProps> = ({ is
           description: 'Weak entity dependent on PURCHASE_ORDER',
           position: { x: 500, y: 120 },
           attributes: [
-            { id: 'ai_1', entityId: 'adv_item', name: 'OrderID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'adv_ord' },
-            { id: 'ai_2', entityId: 'adv_item', name: 'ItemNumber', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: false },
+            { id: 'ai_0', entityId: 'adv_item', name: 'OrderItemID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
+            { id: 'ai_1', entityId: 'adv_item', name: 'OrderID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'adv_ord' },
+            { id: 'ai_2', entityId: 'adv_item', name: 'ItemNumber', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
             { id: 'ai_3', entityId: 'adv_item', name: 'ProductName', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
             { id: 'ai_4', entityId: 'adv_item', name: 'Quantity', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
           ],

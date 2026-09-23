@@ -156,19 +156,35 @@ export const KeysLabModal: React.FC<KeysLabModalProps> = ({ isOpen, onClose }) =
                 </div>
               </div>
 
-              {/* Composite Key */}
-              <div className="p-4 rounded-xl bg-white border-2 border-zinc-900 md:col-span-2 space-y-2 shadow-[2px_2px_0px_#18181B]">
+              {/* Foreign Key */}
+              <div className="p-4 rounded-xl bg-white border-2 border-zinc-900 space-y-2 shadow-[2px_2px_0px_#18181B]">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm text-zinc-900 font-mono">5. Composite Primary Key</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-100 text-zinc-800 border border-zinc-900">
-                    Multi-Column Key
+                  <span className="font-bold text-sm text-zinc-900 font-mono">5. Foreign Key (FK)</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-100 text-sky-900 border border-zinc-900 font-bold">
+                    Referential Link
                   </span>
                 </div>
                 <p className="text-xs text-zinc-700 leading-relaxed">
-                  A primary key composed of two or more columns when no single attribute alone can guarantee uniqueness. Common in associative junction tables resolving Many-to-Many relationships.
+                  A column (or group of columns) in one table that references the Primary Key of another table. It enforces Referential Integrity and connects relational data without duplicating records.
+                </p>
+                <div className="p-2.5 rounded bg-zinc-50 font-mono text-[11px] text-zinc-800 border border-zinc-300">
+                  Example: In Course, <span className="font-bold text-sky-800">InstructorID FK</span> references <span className="font-bold">INSTRUCTOR(InstructorID PK)</span>
+                </div>
+              </div>
+
+              {/* Single PK Best Practice vs Composite Key */}
+              <div className="p-4 rounded-xl bg-white border-2 border-zinc-900 md:col-span-2 space-y-2 shadow-[2px_2px_0px_#18181B]">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm text-zinc-900 font-mono">6. Single Primary Key Rule & Associative Tables</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#FEF08A] text-zinc-900 border border-zinc-900 font-bold">
+                    Relational Best Practice
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-700 leading-relaxed">
+                  Every table must have strictly <strong>one Primary Key</strong>. In associative/junction tables (like ENROLLMENT or ORDER_ITEM), modern database engineering assigns a single surrogate primary key (e.g. <span className="font-mono font-bold">EnrollmentID PK</span>), while the connected columns (<span className="font-mono font-bold">StudentID FK, CourseID FK</span>) act purely as Foreign Keys.
                 </p>
                 <div className="p-2.5 rounded bg-zinc-50 font-mono text-[11px] text-zinc-900 border border-zinc-300">
-                  Example (Enrollment): <span className="font-bold bg-[#FEF08A] px-1 rounded">PRIMARY KEY (StudentID, CourseID)</span>
+                  Best Practice Schema: <span className="font-bold bg-[#FEF08A] px-1 rounded">EnrollmentID (PK)</span> + <span className="font-bold text-sky-800">StudentID (FK)</span> + <span className="font-bold text-sky-800">CourseID (FK)</span>
                 </div>
               </div>
             </div>

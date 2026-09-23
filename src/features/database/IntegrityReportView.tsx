@@ -33,13 +33,32 @@ export const IntegrityReportView: React.FC = () => {
         title: `Entity '${entity.name}' has no Primary Key`,
         details: 'Every table must have a unique, non-null primary key to distinguish records.',
       });
+    } else if (pk.length > 1) {
+      diagnostics.push({
+        id: `multi_pk_${entity.id}`,
+        level: 'error',
+        category: 'Entity Integrity',
+        title: `Entity '${entity.name}' has ${pk.length} Primary Keys (${pk.map((k) => k.name).join(', ')})`,
+        details: 'A relational table must have exactly ONE Primary Key. Relational references to other tables should be Foreign Keys.',
+      });
     } else {
       diagnostics.push({
         id: `has_pk_${entity.id}`,
         level: 'pass',
         category: 'Entity Integrity',
-        title: `'${entity.name}' has valid Primary Key (${pk.map((k) => k.name).join(', ')})`,
+        title: `'${entity.name}' has valid Primary Key (${pk[0].name})`,
         details: 'Entity integrity is properly satisfied for this table.',
+      });
+    }
+
+    const both = entity.attributes.filter((a) => a.isPrimaryKey && a.isForeignKey);
+    if (both.length > 0) {
+      diagnostics.push({
+        id: `both_pk_fk_${entity.id}`,
+        level: 'warning',
+        category: 'Relational Design',
+        title: `Entity '${entity.name}' has columns marked as both PK and FK: ${both.map((a) => a.name).join(', ')}`,
+        details: 'Relational design best practice uses a single dedicated Primary Key, with referencing columns defined strictly as Foreign Keys.',
       });
     }
   });

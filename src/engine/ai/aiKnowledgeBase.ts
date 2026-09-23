@@ -84,13 +84,13 @@ ${tableName.toUpperCase()} TABLE
     rules: [
       'Must be UNIQUE — duplicate values are strictly rejected.',
       'Cannot be NULL — every row must have an identifiable key.',
-      'Only ONE primary key per table (can be a composite key of multiple columns).',
+      'Only ONE primary key per table — other referencing columns should be Foreign Keys.',
       'Should be stable — avoid columns that change often (like phone numbers or emails).',
     ],
     commonMisconception: {
       myth: 'A table can have multiple Primary Keys.',
       correction:
-        'A table can only have ONE Primary Key. However, it can have multiple "Candidate Keys" (unique columns) or a "Composite Key" (one primary key made of 2+ columns).',
+        'A table can only have ONE Primary Key. Relational references to other tables must be Foreign Keys, with a single Primary Key uniquely identifying each record.',
     },
     interactiveExperiment: {
       title: 'Test Primary Key Uniqueness Violation',
@@ -306,9 +306,9 @@ export const COMMON_MISCONCEPTIONS: MisconceptionItem[] = [
     whyItsFalse:
       'By mathematical definition of relational algebra, a relation has exactly ONE primary key to identify a tuple.',
     correctPrinciple:
-      'A table has exactly ONE Primary Key. If you need uniqueness across multiple columns, you create a Composite Primary Key (one key composed of multiple columns) or add UNIQUE constraints (Candidate Keys).',
+      'A table has exactly ONE Primary Key. Columns that reference parent entities are Foreign Keys. In an associative entity, a dedicated Primary Key (e.g. EnrollmentID) uniquely identifies the record, while StudentID and CourseID serve as Foreign Keys.',
     example:
-      'In ENROLLMENT, (StudentID + CourseID) together form ONE composite primary key. There are not two primary keys.',
+      'In ENROLLMENT, EnrollmentID is the single Primary Key, while StudentID (FK) and CourseID (FK) link to Student and Course.',
   },
   {
     id: 'misc_fk_null',
@@ -499,7 +499,7 @@ export function generateAiTutorResponse(
 • **Constraint:** Must match an existing PK in the referenced table (Referential Integrity).
 
 **Can a column be both?**
-Yes! In an associative junction table like \`ENROLLMENT\`, \`StudentID\` is part of the composite Primary Key AND acts as a Foreign Key referencing \`STUDENT\`.`,
+While composite keys historically allowed columns to be both, industry best practice is for every table to have ONE dedicated Primary Key (e.g., \`EnrollmentID\`), while referencing columns act purely as Foreign Keys (\`StudentID FK\`, \`CourseID FK\`).`,
       diagram: `
 STUDENT (PK Table)            ENROLLMENT (FK Table)
 ┌──────────────┐             ┌──────────────┐

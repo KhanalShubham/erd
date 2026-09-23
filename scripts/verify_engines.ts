@@ -97,8 +97,10 @@ const tablesMN = RelationalEngine.generateRelationalSchema([studentEntity, cours
 assert(tablesMN.length === 3, 'M:N generates 3 tables (2 entity tables + 1 junction table)');
 const junction = tablesMN.find((t) => t.name.includes('_') || t.name === 'student_course');
 assert(!!junction, 'Junction table created for M:N');
-const compositePks = junction?.columns.filter((c) => c.isPrimaryKey);
-assert(compositePks?.length === 2, 'Junction table has composite PK of 2 foreign keys');
+const junctionPk = junction?.columns.filter((c) => c.isPrimaryKey);
+assert(junctionPk?.length === 1, 'Junction table has exactly 1 Primary Key');
+const junctionFks = junction?.columns.filter((c) => c.isForeignKey);
+assert(junctionFks?.length === 2, 'Junction table has 2 Foreign Keys referencing participating tables');
 
 console.log('\n--- 2. Testing ConstraintValidator ---');
 
@@ -150,12 +152,27 @@ assert(mysqlSql.includes('CREATE TABLE `Department`'), 'MySQL DDL uses backtick 
 const sqliteSql = SqlGenerator.generateDDL(tables1N, 'SQLite');
 assert(sqliteSql.includes('CREATE TABLE "Department"'), 'SQLite DDL generated properly');
 
-console.log('\n--- 4. Testing 15 Real-World Scenarios Catalog ---');
+console.log('\n--- 4. Testing 15 Real-World Scenarios Catalog & Key Invariants ---');
 assert(systemsCatalog.length === 15, `Catalog contains 15 scenarios (found ${systemsCatalog.length})`);
 for (const sys of systemsCatalog) {
   assert(sys.canonicalEntities.length > 0, `Scenario "${sys.name}" has canonical entities`);
   assert(sys.requirements.length >= 3, `Scenario "${sys.name}" has at least 3 requirements`);
   assert(!!sys.sampleData, `Scenario "${sys.name}" has sample data`);
+
+  // Verify Single Primary Key Invariant across all canonical entities
+  for (const ent of sys.canonicalEntities) {
+    const pks = ent.attributes.filter((a) => a.isPrimaryKey);
+    assert(pks.length === 1, `[${sys.id}] Entity "${ent.name}" must have strictly 1 Primary Key (found ${pks.length}: ${pks.map(p => p.name).join(', ')})`);
+
+    const both = ent.attributes.filter((a) => a.isPrimaryKey && a.isForeignKey);
+    assert(both.length === 0, `[${sys.id}] Entity "${ent.name}" cannot have attributes marked as both PK and FK (found: ${both.map(b => b.name).join(', ')})`);
+  }
+
+  // Verify Single Primary Key Invariant across all generated relational tables
+  const generatedTables = RelationalEngine.generateRelationalSchema(sys.canonicalEntities, sys.canonicalRelationships);
+  for (const table of generatedTables) {
+    assert(table.primaryKey.length === 1, `[${sys.id}] Relational Table "${table.name}" must have strictly 1 Primary Key (found ${table.primaryKey.length}: ${table.primaryKey.join(', ')})`);
+  }
 }
 
-console.log('\n🎉 ALL 15 TESTS PASSED SUCCESSFULLY!\n');
+console.log('\n🎉 ALL TESTS AND KEY INVARIANTS PASSED SUCCESSFULLY!\n');
