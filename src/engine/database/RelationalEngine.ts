@@ -61,20 +61,8 @@ export class RelationalEngine {
         columns.push(col);
       }
 
-      // Enforce strictly ONE primary key per table:
-      // If multiple attributes were marked as PK, keep the first one and treat the rest as foreign/regular keys
-      if (primaryKeyColumns.length > 1) {
-        const chosenPk = primaryKeyColumns[0];
-        primaryKeyColumns.length = 0;
-        primaryKeyColumns.push(chosenPk);
-
-        for (const col of columns) {
-          if (col.name !== chosenPk && col.isPrimaryKey) {
-            col.isPrimaryKey = false;
-            col.isForeignKey = true;
-          }
-        }
-      }
+      // Note: A table has ONE primary key, which may be a single column or a
+      // composite primary key formed by multiple columns. We preserve all PK columns.
 
       // If weak entity and owner entity exists, mark identifying relation
       tablesMap.set(entity.id, {
@@ -231,26 +219,17 @@ export class RelationalEngine {
           targetTable.uniqueConstraints.push([colName]);
         }
       } else if (effectiveCardinality === 'M:N') {
-        // Decompose M:N into an Associative / Junction Table with single surrogate PK and FKs
+        // Decompose M:N into an Associative / Junction Table with Composite Primary Key (FK1 + FK2)
         if (sourcePkAttr && targetPkAttr) {
           const junctionName = `${sourceTable.name}_${targetTable.name}`.toLowerCase();
-          const pkColName = `${junctionName}_id`;
           const sourceFkName = `${sourceTable.name.toLowerCase()}_${sourcePkAttr.name}`;
           const targetFkName = `${targetTable.name.toLowerCase()}_${targetPkAttr.name}`;
 
           const junctionCols: RelationalColumn[] = [
             {
-              name: pkColName,
-              dataType: 'INTEGER',
-              isPrimaryKey: true,
-              isForeignKey: false,
-              isNullable: false,
-              isUnique: true,
-            },
-            {
               name: sourceFkName,
               dataType: sourcePkAttr.dataType,
-              isPrimaryKey: false,
+              isPrimaryKey: true,
               isForeignKey: true,
               isNullable: false,
               isUnique: false,
@@ -260,7 +239,7 @@ export class RelationalEngine {
             {
               name: targetFkName,
               dataType: targetPkAttr.dataType,
-              isPrimaryKey: false,
+              isPrimaryKey: true,
               isForeignKey: true,
               isNullable: false,
               isUnique: false,
@@ -287,7 +266,7 @@ export class RelationalEngine {
             name: junctionName,
             entityId: `junction_${rel.id}`,
             columns: junctionCols,
-            primaryKey: [pkColName],
+            primaryKey: [sourceFkName, targetFkName],
             foreignKeys: [
               {
                 column: sourceFkName,
@@ -300,7 +279,7 @@ export class RelationalEngine {
                 referencedColumn: targetPkAttr.name,
               },
             ],
-            uniqueConstraints: [[sourceFkName, targetFkName]],
+            uniqueConstraints: [],
             checkConstraints: [],
           });
         }

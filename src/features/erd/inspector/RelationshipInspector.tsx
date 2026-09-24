@@ -3,9 +3,15 @@ import {
   Trash2,
   Split,
   Link,
+  BookOpen,
+  ArrowRight,
+  ArrowLeft,
+  AlertTriangle,
+  Compass,
 } from 'lucide-react';
 import type { Relationship, Cardinality, Attribute } from '../../../types/erd';
 import { useErdStore } from '../../../stores/erdStore';
+import { ErdCorrectnessEngine } from '../../../engine/database/ErdCorrectnessEngine';
 
 interface RelationshipInspectorProps {
   relationship: Relationship;
@@ -26,6 +32,14 @@ export const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({ re
   const targetEntity = entities.find((e) => e.id === relationship.targetEntityId);
 
   const isManyToMany = relationship.cardinality === 'M:N';
+
+  // Compute bidirectional traversal and 3-way triangulation
+  const traversal = ErdCorrectnessEngine.getRelationshipTraversals(relationship, entities);
+
+  const isCashierReceipt11Contradiction =
+    relationship.cardinality === '1:1' &&
+    ((sourceEntity?.name.toUpperCase().includes('CASHIER') && targetEntity?.name.toUpperCase().includes('RECEIPT')) ||
+      (sourceEntity?.name.toUpperCase().includes('RECEIPT') && targetEntity?.name.toUpperCase().includes('CASHIER')));
 
   const handleAddRelationshipAttribute = () => {
     if (!newAttrName.trim()) return;
@@ -68,21 +82,116 @@ export const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({ re
 
   return (
     <div className="space-y-4 text-xs">
+      {/* Contradiction Alert Banner */}
+      {isCashierReceipt11Contradiction && (
+        <div className="p-3 bg-rose-50 border-2 border-rose-600 rounded-lg text-rose-950 space-y-1 shadow-[2px_2px_0px_#E11D48] animate-in fade-in">
+          <div className="flex items-center gap-1.5 font-mono font-bold text-xs">
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>CRITICAL CARDINALITY ERROR</span>
+          </div>
+          <p className="text-[11px] leading-relaxed">
+            Your relationship specifies <strong>1:1</strong> between Cashier and Sale Receipt.
+            This asserts that one cashier can only ever process <em>one receipt in their career</em>!
+          </p>
+          <div className="pt-1 text-[11px] font-mono text-rose-900">
+            <strong>Correct Cardinality:</strong> CASHIER [1] (0..N) ── rings_up ──► [N] (1..1) SALE_RECEIPT
+          </div>
+        </div>
+      )}
+
       {/* Connected Tables Summary */}
-      <div className="p-2 rounded bg-zinc-50 border border-zinc-200 flex items-center justify-between text-xs">
-        <span className="font-mono font-bold text-zinc-900">{sourceEntity?.name || 'A'}</span>
-        <span className="text-zinc-500 font-mono text-[11px]">— [{relationship.cardinality}] —</span>
-        <span className="font-mono font-bold text-zinc-900">{targetEntity?.name || 'B'}</span>
+      <div className="p-2.5 rounded bg-zinc-50 border border-zinc-300 flex items-center justify-between text-xs">
+        <span className="font-mono font-bold text-zinc-900 bg-white px-2 py-0.5 rounded border border-zinc-200">
+          {sourceEntity?.name || 'A'}
+        </span>
+        <span className="text-zinc-600 font-mono text-[11px] font-bold">
+          [{relationship.sourceMax || '1'}] ── {relationship.name} ──► [{relationship.targetMax || 'N'}]
+        </span>
+        <span className="font-mono font-bold text-zinc-900 bg-white px-2 py-0.5 rounded border border-zinc-200">
+          {targetEntity?.name || 'B'}
+        </span>
+      </div>
+
+      {/* 1. Bidirectional Cardinality Traversal & Reverse-Read Test (Sections 2, 15, 16) */}
+      <div className="p-2.5 rounded bg-yellow-50/70 border border-amber-300 space-y-2">
+        <div className="flex items-center gap-1.5 text-amber-900 font-mono font-bold text-[11px] uppercase tracking-wider">
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>Bidirectional Reading Test</span>
+        </div>
+
+        {/* Forward Read */}
+        <div className="p-2 rounded bg-white border border-amber-200 space-y-0.5">
+          <div className="flex items-center gap-1 text-[10px] font-mono font-bold text-zinc-500 uppercase">
+            <ArrowRight className="w-3 h-3 text-amber-700" />
+            <span>Forward Statement (Left-to-Right)</span>
+          </div>
+          <p className="text-zinc-900 font-medium text-[11.5px] leading-snug">
+            "{traversal.forwardSentence}"
+          </p>
+        </div>
+
+        {/* Reverse Read */}
+        <div className="p-2 rounded bg-white border border-amber-200 space-y-0.5">
+          <div className="flex items-center gap-1 text-[10px] font-mono font-bold text-zinc-500 uppercase">
+            <ArrowLeft className="w-3 h-3 text-amber-700" />
+            <span>Reverse-Read Test (Right-to-Left)</span>
+          </div>
+          <p className="text-zinc-900 font-medium text-[11.5px] leading-snug">
+            "{traversal.reverseSentence}"
+          </p>
+        </div>
+      </div>
+
+      {/* 2. 3-Way Triangulation Status (Section 17) */}
+      <div className="p-2.5 rounded bg-white border border-zinc-300 space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="font-mono font-bold text-[11px] uppercase tracking-wider text-zinc-800 flex items-center gap-1">
+            <Compass className="w-3.5 h-3.5 text-zinc-700" />
+            <span>3-Way Triangulation Check</span>
+          </span>
+          <span
+            className={`px-1.5 py-0.2 rounded font-mono text-[10px] font-bold border ${
+              traversal.triangulationStatus === 'PASS'
+                ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                : traversal.triangulationStatus === 'WARNING'
+                ? 'bg-amber-100 text-amber-900 border-amber-300'
+                : 'bg-rose-100 text-rose-900 border-rose-300'
+            }`}
+          >
+            {traversal.triangulationStatus}
+          </span>
+        </div>
+
+        <div className="space-y-1 text-[11px] text-zinc-700">
+          <div className="flex items-start gap-1.5">
+            <span className="font-mono font-bold text-zinc-900 shrink-0">Check A (Business):</span>
+            <span>Natural language traversal must be true in both directions.</span>
+          </div>
+          <div className="flex items-start gap-1.5">
+            <span className="font-mono font-bold text-zinc-900 shrink-0">Check B (Diagram):</span>
+            <span className="font-mono text-zinc-900 font-bold">{relationship.cardinality}</span>
+          </div>
+          <div className="flex items-start gap-1.5">
+            <span className="font-mono font-bold text-zinc-900 shrink-0">Check C (Schema):</span>
+            <span className="font-mono text-zinc-900">{traversal.fkLocation}</span>
+          </div>
+        </div>
+
+        <p className="text-[10.5px] text-zinc-600 italic border-t border-zinc-100 pt-1.5 leading-snug">
+          {traversal.triangulationDetails}
+        </p>
       </div>
 
       {/* Relationship Name */}
       <div>
-        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Relationship Name / Verb</label>
+        <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+          Relationship Verb Phrase (Must describe real business action)
+        </label>
         <input
           type="text"
           value={relationship.name}
           onChange={(e) => updateRelationship(relationship.id, { name: e.target.value })}
-          placeholder="e.g. teaches, enrolls in, contains"
+          placeholder="e.g. rings_up, contains, scanned_in"
           className="w-full px-2.5 py-1.5 rounded border border-zinc-300 bg-white text-zinc-900 text-xs focus:outline-none focus:border-zinc-900 font-handwriting text-base"
         />
       </div>
@@ -92,8 +201,21 @@ export const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({ re
         <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Cardinality Ratio</label>
         <select
           value={relationship.cardinality}
-          onChange={(e) => updateRelationship(relationship.id, { cardinality: e.target.value as Cardinality })}
-          className="w-full px-2.5 py-1.5 rounded border border-zinc-300 bg-white text-zinc-900 text-xs focus:outline-none focus:border-zinc-900 font-mono"
+          onChange={(e) => {
+            const card = e.target.value as Cardinality;
+            let sMax: '1' | 'N' = '1';
+            let tMax: '1' | 'N' = 'N';
+            if (card === '1:1') { sMax = '1'; tMax = '1'; }
+            else if (card === 'N:1') { sMax = 'N'; tMax = '1'; }
+            else if (card === 'M:N') { sMax = 'N'; tMax = 'N'; }
+
+            updateRelationship(relationship.id, {
+              cardinality: card,
+              sourceMax: sMax,
+              targetMax: tMax,
+            });
+          }}
+          className="w-full px-2.5 py-1.5 rounded border border-zinc-300 bg-white text-zinc-900 text-xs focus:outline-none focus:border-zinc-900 font-mono font-bold"
         >
           <option value="1:N">1:N (One to Many)</option>
           <option value="1:1">1:1 (One to One)</option>

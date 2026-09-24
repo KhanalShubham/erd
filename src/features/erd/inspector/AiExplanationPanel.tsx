@@ -18,6 +18,7 @@ import { useDatabaseStore } from '../../../stores/databaseStore';
 import { useErdStore } from '../../../stores/erdStore';
 import { useLearningStore } from '../../../stores/learningStore';
 import type { DatabaseRow, IntegrityViolation } from '../../../types/database';
+import { MarkdownRenderer } from '../../../components/common/MarkdownRenderer';
 
 interface AiExplanationPanelProps {
   entity?: Entity;
@@ -269,7 +270,7 @@ export const AiExplanationPanel: React.FC<AiExplanationPanelProps> = ({
           <BookOpen className="w-3 h-3 text-zinc-700" />
           <span>Core Concept</span>
         </div>
-        <p className="text-zinc-800 text-[12.5px] leading-normal">{explanation.definition}</p>
+        <MarkdownRenderer content={explanation.definition} className="text-zinc-800 text-[12.5px] leading-normal" />
       </div>
 
       {/* 2. WHY this element exists in this scenario */}
@@ -282,7 +283,7 @@ export const AiExplanationPanel: React.FC<AiExplanationPanelProps> = ({
           {explanation.whyThisElement.map((reason, idx) => (
             <li key={idx} className="flex items-start gap-2 text-zinc-700 text-[11.5px]">
               <span className="text-zinc-400 font-mono select-none">•</span>
-              <span>{reason}</span>
+              <MarkdownRenderer content={reason} className="inline text-zinc-700 text-[11.5px]" />
             </li>
           ))}
         </ul>
@@ -304,9 +305,9 @@ export const AiExplanationPanel: React.FC<AiExplanationPanelProps> = ({
           <span>💡 Real-World Analogy:</span>
           <span className="normal-case font-bold">{explanation.realWorldAnalogy.title}</span>
         </div>
-        <p className="text-zinc-800 text-[11.5px] italic">
-          "{explanation.realWorldAnalogy.description}"
-        </p>
+        <div className="text-zinc-800 text-[11.5px] italic">
+          <MarkdownRenderer content={`"${explanation.realWorldAnalogy.description}"`} className="italic text-zinc-800 text-[11.5px]" />
+        </div>
       </div>
 
       {/* 5. Essential Rules */}
@@ -318,7 +319,7 @@ export const AiExplanationPanel: React.FC<AiExplanationPanelProps> = ({
           {explanation.rules.map((rule, idx) => (
             <div key={idx} className="flex items-start gap-1.5 text-[11.5px] text-zinc-800">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-              <span>{rule}</span>
+              <MarkdownRenderer content={rule} className="inline text-zinc-800 text-[11.5px]" />
             </div>
           ))}
         </div>

@@ -8,6 +8,7 @@ import {
 import { useErdStore } from '../../stores/erdStore';
 import { useLearningStore } from '../../stores/learningStore';
 import type { Entity, Relationship } from '../../types/erd';
+import { MarkdownRenderer } from '../../components/common/MarkdownRenderer';
 
 interface AdvancedConceptsModalProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ export const AdvancedConceptsModal: React.FC<AdvancedConceptsModalProps> = ({ is
       summary:
         'A Weak Entity cannot be uniquely identified by its own attributes alone. It depends upon an identifying owner entity. Its primary key is formed by combining the owner primary key with its own partial discriminator key.',
       databaseRule:
-        'Relational Result: ORDER_ITEM table uses OrderItemID as its Primary Key and OrderID (FK) referencing PURCHASE_ORDER. When an Order is deleted, cascading deletes purge all its line items.',
+        'Relational Result: ORDER_ITEM table uses composite primary key `(OrderID PK, FK + ItemNumber PK)`. The owner primary key migrates into the weak entity to uniquely identify each line item with ON DELETE CASCADE.',
       entities: [
         {
           id: 'adv_ord',
@@ -62,12 +63,11 @@ export const AdvancedConceptsModal: React.FC<AdvancedConceptsModalProps> = ({ is
           id: 'adv_item',
           name: 'ORDER_ITEM',
           type: 'weak',
-          description: 'Weak entity dependent on PURCHASE_ORDER',
+          description: 'Weak entity dependent on PURCHASE_ORDER with composite PK (OrderID, ItemNumber)',
           position: { x: 500, y: 120 },
           attributes: [
-            { id: 'ai_0', entityId: 'adv_item', name: 'OrderItemID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
-            { id: 'ai_1', entityId: 'adv_item', name: 'OrderID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'adv_ord' },
-            { id: 'ai_2', entityId: 'adv_item', name: 'ItemNumber', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+            { id: 'ai_1', entityId: 'adv_item', name: 'OrderID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'adv_ord' },
+            { id: 'ai_2', entityId: 'adv_item', name: 'ItemNumber', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: false },
             { id: 'ai_3', entityId: 'adv_item', name: 'ProductName', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
             { id: 'ai_4', entityId: 'adv_item', name: 'Quantity', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
           ],
@@ -345,7 +345,7 @@ export const AdvancedConceptsModal: React.FC<AdvancedConceptsModalProps> = ({ is
           {/* Explanation Text */}
           <div className="p-4 rounded-xl bg-white border-2 border-zinc-900 text-xs text-zinc-800 leading-relaxed space-y-2 shadow-[2px_2px_0px_#18181B]">
             <span className="font-bold text-zinc-900 block font-mono uppercase text-[10px] tracking-wider">Conceptual Mechanics:</span>
-            <p>{currentConcept.summary}</p>
+            <MarkdownRenderer content={currentConcept.summary} className="text-xs text-zinc-800" />
           </div>
 
           {/* Relational Rule */}
@@ -354,7 +354,7 @@ export const AdvancedConceptsModal: React.FC<AdvancedConceptsModalProps> = ({ is
               <ShieldCheck className="w-4 h-4 text-zinc-900" />
               <span>Relational Schema & Database Rule:</span>
             </span>
-            <p>{currentConcept.databaseRule}</p>
+            <MarkdownRenderer content={currentConcept.databaseRule} className="text-xs text-zinc-800" />
           </div>
 
           {/* Miniature Entity Preview Cards */}

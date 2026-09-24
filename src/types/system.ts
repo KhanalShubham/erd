@@ -50,4 +50,5 @@ export interface ChallengeEvaluation {
   cardinalityScore: { score: number; max: number; feedback: string[] };
   foreignKeysScore: { score: number; max: number; feedback: string[] };
   generalFeedback: string[];
+  validationReport?: any;
 }

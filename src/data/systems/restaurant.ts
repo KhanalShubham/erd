@@ -14,7 +14,7 @@ export const restaurantSystem: SystemScenario = {
     'Define ENUM domains for menu categories and seating areas',
   ],
   conceptsCovered: ['1:N Cardinality', 'Associative Entities', 'CHECK Constraints', 'Foreign Keys', 'ENUM Domain'],
-  entityCount: 4,
+  entityCount: 5,
   requirements: [
     {
       id: 'res_1',
@@ -44,6 +44,14 @@ export const restaurantSystem: SystemScenario = {
       verbHints: ['serves', 'places order'],
       attributeHints: ['TicketID (PK)', 'TableNumber (FK)', 'WaiterID (FK)', 'OrderTime', 'TotalCheck'],
       cardinalityHint: 'DiningTable 1 ──── N OrderTicket N ──── 1 Waiter',
+    },
+    {
+      id: 'res_5',
+      text: 'Order tickets contain ordered menu items with quantity and subtotal. A dish can appear across multiple tickets (resolved via TicketItem associative entity with composite PK).',
+      nounHints: ['TicketItem', 'quantity', 'subtotal'],
+      verbHints: ['contains', 'ordered_in'],
+      attributeHints: ['TicketID (PK, FK)', 'ItemID (PK, FK)', 'Quantity (CHECK > 0)', 'ItemSubtotal'],
+      cardinalityHint: 'OrderTicket 1 ──── N TicketItem N ──── 1 MenuItem',
     },
   ],
   canonicalEntities: [
@@ -86,11 +94,24 @@ export const restaurantSystem: SystemScenario = {
       ],
     },
     {
+      id: 'ent_rst_item',
+      name: 'TICKET_ITEM',
+      type: 'associative',
+      description: 'Ordered menu item line with composite PK (TicketID, ItemID)',
+      position: { x: 550, y: 390 },
+      attributes: [
+        { id: 'ti_1', entityId: 'ent_rst_item', name: 'TicketID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_rst_tkt' },
+        { id: 'ti_2', entityId: 'ent_rst_item', name: 'ItemID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_rst_menu' },
+        { id: 'ti_3', entityId: 'ent_rst_item', name: 'Quantity', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false, domain: { minValue: 1 } },
+        { id: 'ti_4', entityId: 'ent_rst_item', name: 'ItemSubtotal', type: 'simple', dataType: 'DECIMAL', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
+      ],
+    },
+    {
       id: 'ent_rst_menu',
       name: 'MENU_ITEM',
       type: 'strong',
       description: 'Culinary dish prepared by chefs',
-      position: { x: 780, y: 390 },
+      position: { x: 840, y: 390 },
       attributes: [
         { id: 'mi_1', entityId: 'ent_rst_menu', name: 'ItemID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
         { id: 'mi_2', entityId: 'ent_rst_menu', name: 'ItemName', type: 'simple', dataType: 'VARCHAR', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: true },
@@ -124,6 +145,30 @@ export const restaurantSystem: SystemScenario = {
       targetMax: 'N',
       attributes: [],
     },
+    {
+      id: 'rel_rst_tkt_item',
+      name: 'contains',
+      sourceEntityId: 'ent_rst_tkt',
+      targetEntityId: 'ent_rst_item',
+      cardinality: '1:N',
+      sourceOptionality: '1',
+      targetOptionality: '0',
+      sourceMax: '1',
+      targetMax: 'N',
+      attributes: [],
+    },
+    {
+      id: 'rel_rst_menu_item',
+      name: 'ordered_in',
+      sourceEntityId: 'ent_rst_menu',
+      targetEntityId: 'ent_rst_item',
+      cardinality: '1:N',
+      sourceOptionality: '1',
+      targetOptionality: '0',
+      sourceMax: '1',
+      targetMax: 'N',
+      attributes: [],
+    },
   ],
   sampleData: {
     DINING_TABLE: [
@@ -135,14 +180,19 @@ export const restaurantSystem: SystemScenario = {
       { WaiterID: 21, FullName: 'Marco Pierre', Phone: '555-8821' },
       { WaiterID: 22, FullName: 'Sophie Germain', Phone: '555-8822' },
     ],
+    ORDER_TICKET: [
+      { TicketID: 801, TableNumber: 1, WaiterID: 21, OrderTime: '2026-03-22 19:15:00', TotalCheck: 38.50 },
+      { TicketID: 802, TableNumber: 2, WaiterID: 22, OrderTime: '2026-03-22 19:45:00', TotalCheck: 24.50 },
+    ],
     MENU_ITEM: [
       { ItemID: 301, ItemName: 'Truffle Mushroom Risotto', Category: 'Main', Price: 24.50 },
       { ItemID: 302, ItemName: 'Crispy Calamari', Category: 'Appetizer', Price: 14.00 },
       { ItemID: 303, ItemName: 'Tiramisu Tradizionale', Category: 'Dessert', Price: 9.50 },
     ],
-    ORDER_TICKET: [
-      { TicketID: 801, TableNumber: 1, WaiterID: 21, OrderTime: '2026-03-22 19:15:00', TotalCheck: 38.50 },
-      { TicketID: 802, TableNumber: 2, WaiterID: 22, OrderTime: '2026-03-22 19:45:00', TotalCheck: 24.50 },
+    TICKET_ITEM: [
+      { TicketID: 801, ItemID: 301, Quantity: 1, ItemSubtotal: 24.50 },
+      { TicketID: 801, ItemID: 302, Quantity: 1, ItemSubtotal: 14.00 },
+      { TicketID: 802, ItemID: 301, Quantity: 1, ItemSubtotal: 24.50 },
     ],
   },
 };

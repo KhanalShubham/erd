@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Entity, Relationship } from '../types/erd';
 import type { SystemScenario, ChallengeEvaluation } from '../types/system';
+import { ErdCorrectnessEngine } from '../engine/database/ErdCorrectnessEngine';
 
 interface ChallengeStoreState {
   lastEvaluation: ChallengeEvaluation | null;
@@ -68,14 +69,18 @@ export const useChallengeStore = create<ChallengeStoreState>((set) => ({
         const canonPks = cEnt.attributes.filter((a) => a.isPrimaryKey);
 
         if (canonPks.length > 0 && userPks.length > 0) {
-          const allMatch = canonPks.every((cpk) =>
-            userPks.some((upk) => upk.name.toLowerCase() === cpk.name.toLowerCase())
-          );
-          if (allMatch) {
+          const canonPkNames = canonPks.map((k) => k.name.toLowerCase().trim()).sort();
+          const userPkNames = userPks.map((k) => k.name.toLowerCase().trim()).sort();
+
+          const isExactMatch =
+            canonPkNames.length === userPkNames.length &&
+            canonPkNames.every((cpk, idx) => cpk === userPkNames[idx]);
+
+          if (isExactMatch) {
             pkScore++;
-            pkFeedback.push(`✓ Correct primary key defined for '${userEnt.name}'.`);
+            pkFeedback.push(`✓ Correct primary key defined for '${userEnt.name}' (${canonPks.map((k) => k.name).join(', ')}).`);
           } else {
-            pkFeedback.push(`Primary key mismatch on '${userEnt.name}'. Expected (${canonPks.map((k) => k.name).join(', ')}).`);
+            pkFeedback.push(`Primary key mismatch on '${userEnt.name}'. Expected (${canonPks.map((k) => k.name).join(', ')}), found (${userPks.map((k) => k.name).join(', ')}).`);
           }
         }
       }
@@ -105,28 +110,41 @@ export const useChallengeStore = create<ChallengeStoreState>((set) => ({
       }
     }
 
-    // 5. Cardinality Check
+    // 5. Cardinality Check (with edge direction inversion support)
     let cardScore = 0;
     const cardFeedback: string[] = [];
     for (const cRel of canonicalRels) {
       const cSource = canonicalEntities.find((e) => e.id === cRel.sourceEntityId)?.name.toUpperCase();
       const cTarget = canonicalEntities.find((e) => e.id === cRel.targetEntityId)?.name.toUpperCase();
 
+      let isReversed = false;
       const matchedRel = relationships.find((r) => {
         const uSource = entities.find((e) => e.id === r.sourceEntityId)?.name.toUpperCase();
         const uTarget = entities.find((e) => e.id === r.targetEntityId)?.name.toUpperCase();
-        return (
-          (uSource === cSource && uTarget === cTarget) ||
-          (uSource === cTarget && uTarget === cSource)
-        );
+        if (uSource === cSource && uTarget === cTarget) {
+          isReversed = false;
+          return true;
+        }
+        if (uSource === cTarget && uTarget === cSource) {
+          isReversed = true;
+          return true;
+        }
+        return false;
       });
 
       if (matchedRel) {
-        if (matchedRel.cardinality === cRel.cardinality) {
+        // If user drew the line from Target to Source, invert 1:N <-> N:1
+        let normalizedUserCard = matchedRel.cardinality;
+        if (isReversed) {
+          if (matchedRel.cardinality === '1:N') normalizedUserCard = 'N:1';
+          else if (matchedRel.cardinality === 'N:1') normalizedUserCard = '1:N';
+        }
+
+        if (normalizedUserCard === cRel.cardinality) {
           cardScore++;
-          cardFeedback.push(`✓ Cardinality '${matchedRel.cardinality}' correctly specified.`);
+          cardFeedback.push(`✓ Cardinality '${cRel.cardinality}' correctly satisfied between ${cSource} and ${cTarget}.`);
         } else {
-          cardFeedback.push(`Cardinality for ${cSource}–${cTarget} is '${matchedRel.cardinality}'. Expected '${cRel.cardinality}'.`);
+          cardFeedback.push(`Cardinality for ${cSource}–${cTarget} is '${matchedRel.cardinality}'. Expected '${cRel.cardinality}'. Check bidirectional requirements.`);
         }
       }
     }
@@ -171,6 +189,8 @@ export const useChallengeStore = create<ChallengeStoreState>((set) => ({
       generalFeedback.push('Keep practicing! Look closely at the requirements and make sure all entities and associations are represented.');
     }
 
+    const validationReport = ErdCorrectnessEngine.validateErd(entities, relationships, scenario);
+
     const evaluation: ChallengeEvaluation = {
       score: totalScore,
       maxScore,
@@ -182,6 +202,7 @@ export const useChallengeStore = create<ChallengeStoreState>((set) => ({
       cardinalityScore: { score: cardScore, max: canonicalRels.length, feedback: cardFeedback },
       foreignKeysScore: { score: fkScore, max: Math.max(1, canonicalEntities.filter((e) => e.attributes.some((a) => a.isForeignKey)).length), feedback: fkFeedback },
       generalFeedback,
+      validationReport,
     };
 
     set({ lastEvaluation: evaluation, isEvaluationModalOpen: true });

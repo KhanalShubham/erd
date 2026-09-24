@@ -15,6 +15,7 @@ import { KeysLabModal } from './features/learning/KeysLabModal';
 import { AdvancedConceptsModal } from './features/learning/AdvancedConceptsModal';
 import { AiTutorModal } from './features/learning/AiTutorModal';
 import { ProjectsModal } from './features/projects/ProjectsModal';
+import { SolutionModal } from './features/challenges/SolutionModal';
 import { useLearningStore } from './stores/learningStore';
 
 export const App: React.FC = () => {
@@ -26,6 +27,8 @@ export const App: React.FC = () => {
     toggleAdvancedLab,
     isAiTutorOpen,
     toggleAiTutor,
+    isSolutionModalOpen,
+    toggleSolutionModal,
   } = useLearningStore();
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -70,6 +73,7 @@ export const App: React.FC = () => {
       <KeysLabModal isOpen={isKeysLabOpen} onClose={() => toggleKeysLab(false)} />
       <AdvancedConceptsModal isOpen={isAdvancedLabOpen} onClose={() => toggleAdvancedLab(false)} />
       <AiTutorModal isOpen={isAiTutorOpen} onClose={() => toggleAiTutor(false)} />
+      <SolutionModal isOpen={isSolutionModalOpen} onClose={() => toggleSolutionModal(false)} />
       <WelcomeModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
     </div>
   );

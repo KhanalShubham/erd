@@ -149,18 +149,18 @@ export class NormalizationEngine {
           },
           {
             name: 'ENROLLMENT',
-            columns: ['EnrollmentID (PK)', 'StudentID (FK)', 'CourseID (FK)', 'Grade'],
-            primaryKey: ['EnrollmentID'],
+            columns: ['StudentID (PK, FK)', 'CourseID (PK, FK)', 'Grade'],
+            primaryKey: ['StudentID', 'CourseID'],
             sampleRows: [
-              { 'EnrollmentID (PK)': '1', 'StudentID (FK)': '101', 'CourseID (FK)': '201', Grade: 'A' },
-              { 'EnrollmentID (PK)': '2', 'StudentID (FK)': '101', 'CourseID (FK)': '203', Grade: 'B+' },
-              { 'EnrollmentID (PK)': '3', 'StudentID (FK)': '102', 'CourseID (FK)': '201', Grade: 'A+' },
-              { 'EnrollmentID (PK)': '4', 'StudentID (FK)': '102', 'CourseID (FK)': '202', Grade: 'A' },
+              { 'StudentID (PK, FK)': '101', 'CourseID (PK, FK)': '201', Grade: 'A' },
+              { 'StudentID (PK, FK)': '101', 'CourseID (PK, FK)': '203', Grade: 'B+' },
+              { 'StudentID (PK, FK)': '102', 'CourseID (PK, FK)': '201', Grade: 'A+' },
+              { 'StudentID (PK, FK)': '102', 'CourseID (PK, FK)': '202', Grade: 'A' },
             ],
           },
         ],
         violations: [],
-        solutionExplanation: 'Congratulations! The schema is now in 3NF with single primary keys and clean foreign key references, ready for production database deployment.',
+        solutionExplanation: 'Congratulations! The schema is now in 3NF with a composite primary key on ENROLLMENT (StudentID, CourseID) and clean foreign key references, ready for production database deployment.',
       },
     ];
   }

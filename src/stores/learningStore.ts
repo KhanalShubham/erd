@@ -15,6 +15,7 @@ interface LearningStoreState {
   isKeysLabOpen: boolean;
   isAdvancedLabOpen: boolean;
   isAiTutorOpen: boolean;
+  isSolutionModalOpen: boolean;
   activeBottomTab: 'relational' | 'sandbox' | 'sql' | 'validation' | 'explainer';
   isBottomDockExpanded: boolean;
 
@@ -30,6 +31,7 @@ interface LearningStoreState {
   toggleKeysLab: (open?: boolean) => void;
   toggleAdvancedLab: (open?: boolean) => void;
   toggleAiTutor: (open?: boolean) => void;
+  toggleSolutionModal: (open?: boolean) => void;
   setActiveBottomTab: (tab: 'relational' | 'sandbox' | 'sql' | 'validation' | 'explainer') => void;
   toggleBottomDock: (expanded?: boolean) => void;
 }
@@ -45,6 +47,7 @@ export const useLearningStore = create<LearningStoreState>((set) => ({
   isKeysLabOpen: false,
   isAdvancedLabOpen: false,
   isAiTutorOpen: false,
+  isSolutionModalOpen: false,
   activeBottomTab: 'relational',
   isBottomDockExpanded: false,
 
@@ -99,6 +102,10 @@ export const useLearningStore = create<LearningStoreState>((set) => ({
   toggleAiTutor: (open) =>
     set((state) => ({
       isAiTutorOpen: open !== undefined ? open : !state.isAiTutorOpen,
+    })),
+  toggleSolutionModal: (open) =>
+    set((state) => ({
+      isSolutionModalOpen: open !== undefined ? open : !state.isSolutionModalOpen,
     })),
   setActiveBottomTab: (tab) =>
     set({

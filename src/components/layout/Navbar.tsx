@@ -12,6 +12,7 @@ import {
   Check,
   Home,
   Bot,
+  BookOpen,
 } from 'lucide-react';
 import { useLearningStore } from '../../stores/learningStore';
 import { useErdStore } from '../../stores/erdStore';
@@ -24,6 +25,7 @@ export const Navbar: React.FC = () => {
     currentSystem,
     toggleSystemExplorer,
     toggleAiTutor,
+    toggleSolutionModal,
   } = useLearningStore();
 
   const { entities, relationships } = useErdStore();
@@ -175,11 +177,20 @@ export const Navbar: React.FC = () => {
         </button>
       </nav>
 
-      {/* Right Tools: AI Tutor, Projects, Save, SQL */}
+      {/* Right Tools: AI Tutor, Solution, Projects, Save, SQL */}
       <div className="flex items-center gap-1.5 shrink-0">
         <button
+          onClick={() => toggleSolutionModal(true)}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-white hover:bg-zinc-100 text-zinc-900 border border-zinc-900 font-mono font-bold shadow-[1px_1px_0px_#18181B] transition-transform active:scale-95 cursor-pointer"
+          title="Study Authoritative Relational Solution & Model"
+        >
+          <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+          <span className="hidden sm:inline">Solution</span>
+        </button>
+
+        <button
           onClick={() => toggleAiTutor(true)}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#F6E77A] hover:bg-yellow-300 text-zinc-950 border border-zinc-900 font-mono font-bold shadow-[1px_1px_0px_#18181B] transition-transform active:scale-95"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#F6E77A] hover:bg-yellow-300 text-zinc-950 border border-zinc-900 font-mono font-bold shadow-[1px_1px_0px_#18181B] transition-transform active:scale-95 cursor-pointer"
           title="Open AI Database Tutor Notebook"
         >
           <Bot className="w-3.5 h-3.5 text-zinc-950" />

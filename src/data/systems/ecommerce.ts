@@ -9,11 +9,11 @@ export const ecommerceSystem: SystemScenario = {
   scenarioStory:
     'An e-commerce marketplace processes thousands of customer orders daily. Customers place orders containing multiple cart items. Each product has stock levels and price rules, and order line items snapshot the unit price at purchase time.',
   learningObjectives: [
-    'Model single Primary Key on Order_Item (OrderItemID) with Foreign Keys (OrderID, ProductID)',
+    'Model Composite Primary Key on Order_Item (OrderID PK, FK; ProductID PK, FK)',
     'Handle DECIMAL monetary pricing and positive quantity constraints',
     'Demonstrate M:N decomposition between Orders and Products',
   ],
-  conceptsCovered: ['Associative Entity', 'Primary Key', '1:N Cardinality', 'M:N Resolution', 'DECIMAL', 'Foreign Keys'],
+  conceptsCovered: ['Associative Entity', 'Composite Primary Key', '1:N Cardinality', 'M:N Resolution', 'DECIMAL', 'Foreign Keys'],
   entityCount: 4,
   requirements: [
     {
@@ -40,10 +40,10 @@ export const ecommerceSystem: SystemScenario = {
     },
     {
       id: 'ec_4',
-      text: 'Each order contains multiple order items with Quantity and UnitPrice at purchase time (M:N between Order and Product).',
+      text: 'Each order contains products with Quantity and UnitPrice. A product can appear at most once per order (M:N between Order and Product).',
       nounHints: ['OrderItem', 'quantity', 'unit price'],
       verbHints: ['contains'],
-      attributeHints: ['OrderItemID (PK)', 'OrderID (FK)', 'ProductID (FK)', 'Quantity (CHECK > 0)', 'UnitPrice'],
+      attributeHints: ['OrderID (PK, FK)', 'ProductID (PK, FK)', 'Quantity (CHECK > 0)', 'UnitPrice'],
       cardinalityHint: 'Order 1 ──── N OrderItem N ──── 1 Product',
     },
   ],
@@ -78,12 +78,11 @@ export const ecommerceSystem: SystemScenario = {
       id: 'ent_ec_item',
       name: 'ORDER_ITEM',
       type: 'associative',
-      description: 'Order line item joining Order and Product with OrderItemID Primary Key',
+      description: 'Order line item with composite primary key (OrderID, ProductID)',
       position: { x: 520, y: 480 },
       attributes: [
-        { id: 'ec_i_0', entityId: 'ent_ec_item', name: 'OrderItemID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: false, isNullable: false, isUnique: true },
-        { id: 'ec_i_1', entityId: 'ent_ec_item', name: 'OrderID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_ec_ord' },
-        { id: 'ec_i_2', entityId: 'ent_ec_item', name: 'ProductID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_ec_prod' },
+        { id: 'ec_i_1', entityId: 'ent_ec_item', name: 'OrderID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_ec_ord' },
+        { id: 'ec_i_2', entityId: 'ent_ec_item', name: 'ProductID', type: 'simple', dataType: 'INTEGER', isPrimaryKey: true, isForeignKey: true, isNullable: false, isUnique: false, referencedEntityId: 'ent_ec_prod' },
         { id: 'ec_i_3', entityId: 'ent_ec_item', name: 'Quantity', type: 'simple', dataType: 'INTEGER', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false, domain: { minValue: 1, description: 'Quantity >= 1' } },
         { id: 'ec_i_4', entityId: 'ent_ec_item', name: 'UnitPrice', type: 'simple', dataType: 'DECIMAL', isPrimaryKey: false, isForeignKey: false, isNullable: false, isUnique: false },
       ],
@@ -155,9 +154,9 @@ export const ecommerceSystem: SystemScenario = {
       { OrderID: 7002, CustomerID: 102, OrderDate: '2026-03-02', TotalAmount: 429.00 },
     ],
     ORDER_ITEM: [
-      { OrderItemID: 1, OrderID: 7001, ProductID: 501, Quantity: 1, UnitPrice: 89.99 },
-      { OrderItemID: 2, OrderID: 7001, ProductID: 502, Quantity: 1, UnitPrice: 49.50 },
-      { OrderItemID: 3, OrderID: 7002, ProductID: 503, Quantity: 1, UnitPrice: 429.00 },
+      { OrderID: 7001, ProductID: 501, Quantity: 1, UnitPrice: 89.99 },
+      { OrderID: 7001, ProductID: 502, Quantity: 1, UnitPrice: 49.50 },
+      { OrderID: 7002, ProductID: 503, Quantity: 1, UnitPrice: 429.00 },
     ],
   },
 };

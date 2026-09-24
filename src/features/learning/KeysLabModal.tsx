@@ -172,19 +172,19 @@ export const KeysLabModal: React.FC<KeysLabModalProps> = ({ isOpen, onClose }) =
                 </div>
               </div>
 
-              {/* Single PK Best Practice vs Composite Key */}
+              {/* Composite Primary Key on Junction Tables */}
               <div className="p-4 rounded-xl bg-white border-2 border-zinc-900 md:col-span-2 space-y-2 shadow-[2px_2px_0px_#18181B]">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm text-zinc-900 font-mono">6. Single Primary Key Rule & Associative Tables</span>
+                  <span className="font-bold text-sm text-zinc-900 font-mono">6. Composite Primary Key Rule & Junction Tables</span>
                   <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#FEF08A] text-zinc-900 border border-zinc-900 font-bold">
-                    Relational Best Practice
+                    Relational Standard
                   </span>
                 </div>
                 <p className="text-xs text-zinc-700 leading-relaxed">
-                  Every table must have strictly <strong>one Primary Key</strong>. In associative/junction tables (like ENROLLMENT or ORDER_ITEM), modern database engineering assigns a single surrogate primary key (e.g. <span className="font-mono font-bold">EnrollmentID PK</span>), while the connected columns (<span className="font-mono font-bold">StudentID FK, CourseID FK</span>) act purely as Foreign Keys.
+                  A composite primary key is a complete, first-class, valid primary key. When resolving Many-to-Many relationships (like ENROLLMENT or ORDER_ITEM), the participating foreign keys (<span className="font-mono font-bold">StudentID PK, FK</span> and <span className="font-mono font-bold">CourseID PK, FK</span>) naturally combine to uniquely identify each row. Never add a surrogate ID (like EnrollmentID) unless business rules explicitly require an independently identifiable relationship row.
                 </p>
                 <div className="p-2.5 rounded bg-zinc-50 font-mono text-[11px] text-zinc-900 border border-zinc-300">
-                  Best Practice Schema: <span className="font-bold bg-[#FEF08A] px-1 rounded">EnrollmentID (PK)</span> + <span className="font-bold text-sky-800">StudentID (FK)</span> + <span className="font-bold text-sky-800">CourseID (FK)</span>
+                  Canonical Schema: <span className="font-bold bg-[#FEF08A] px-1 rounded">StudentID (PK, FK)</span> + <span className="font-bold bg-[#FEF08A] px-1 rounded">CourseID (PK, FK)</span> + <span className="text-zinc-600">EnrollmentDate</span>
                 </div>
               </div>
             </div>

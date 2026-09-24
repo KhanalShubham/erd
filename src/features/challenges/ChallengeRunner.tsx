@@ -6,13 +6,14 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  BookOpen,
 } from 'lucide-react';
 import { useLearningStore } from '../../stores/learningStore';
 import { useErdStore } from '../../stores/erdStore';
 import { useChallengeStore } from '../../stores/challengeStore';
 
 export const ChallengeRunner: React.FC = () => {
-  const { currentSystem } = useLearningStore();
+  const { currentSystem, toggleSolutionModal } = useLearningStore();
   const { entities, relationships } = useErdStore();
   const { evaluateErd } = useChallengeStore();
 
@@ -78,14 +79,24 @@ export const ChallengeRunner: React.FC = () => {
           </div>
         )}
 
-        {/* Submit Button */}
-        <button
-          onClick={handleEvaluate}
-          className="w-full py-2 px-3 rounded bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-        >
-          <Trophy className="w-3.5 h-3.5 text-amber-300" />
-          <span>Submit for Evaluation</span>
-        </button>
+        {/* Action Buttons */}
+        <div className="space-y-1.5 pt-1">
+          <button
+            onClick={handleEvaluate}
+            className="w-full py-2 px-3 rounded bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+          >
+            <Trophy className="w-3.5 h-3.5 text-amber-300" />
+            <span>Submit for Evaluation</span>
+          </button>
+
+          <button
+            onClick={() => toggleSolutionModal(true)}
+            className="w-full py-1.5 px-3 rounded bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-amber-700" />
+            <span>📖 Study Authoritative Solution</span>
+          </button>
+        </div>
       </div>
     </div>
   );
